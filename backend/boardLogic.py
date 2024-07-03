@@ -31,12 +31,14 @@ async def select_and_remove_words():
     Returns:
         tuple: A tuple containing the selected words from both lists.
     """
-    if not list1:
-        raise ValueError("Both lists must have the same length.")
     if not list2:
         selected_word1 = "We ran out of words"
         selected_word2 = "Why we need to stop playing"
         return selected_word1, selected_word2
+
+    if not list1:
+        raise ValueError("Both lists must have the same length.")
+
 
     # Select a random index
     selected_index = random.randint(0, len(list1) - 1)

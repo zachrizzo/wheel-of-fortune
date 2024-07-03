@@ -17,6 +17,8 @@ const Game = ({ showGame, setShowGame, words }) => {
     const [moreConfetti, setMoreConfetti] = useState(false);
     const recognition = useRef(null);
 
+
+
     useEffect(() => {
         if (solved) {
             confetti({
@@ -194,35 +196,44 @@ const Game = ({ showGame, setShowGame, words }) => {
     };
 
     const displayPuzzle = () => {
-        return puzzle.split('').map((char, index) => (
-            <TextField
-                key={index}
-                value={guesses[index]}
-                inputProps={{
-                    maxLength: 1,
-                    style: { textAlign: 'center' },
-                    readOnly: true,
-                }}
-                sx={{
-                    width: 60,
-                    mx: 0.5,
-                    my: 1,
-                    '& .MuiOutlinedInput-root': {
-                        '& fieldset': { border: 'none' },
-                        '&:hover fieldset': { border: 'none' },
-                        '&.Mui-focused fieldset': { border: 'none' },
-                    },
-                    '& .MuiInputBase-input': {
-                        backgroundColor: char === ' '
-                            ? 'transparent'
-                            : (error && guesses[index] === '' ? '#ffcccb' : '#f0f0f0'),
-                        borderRadius: 5,
-                        transition: 'background-color 0.3s',
-                    },
-                }}
-                disabled={char === ' '}
-            />
-        ));
+        const words = puzzle.split(' ');
+        return (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {words.map((word, wordIndex) => (
+                    <Box key={wordIndex} sx={{ display: 'flex', m: 1 }}>
+                        {word.split('').map((char, charIndex) => {
+                            const index = puzzle.indexOf(word) + charIndex;
+                            return (
+                                <TextField
+                                    key={index}
+                                    value={guesses[index]}
+                                    inputProps={{
+                                        maxLength: 1,
+                                        style: { textAlign: 'center' },
+                                        readOnly: true,
+                                    }}
+                                    sx={{
+                                        width: 60,
+                                        mx: 0.5,
+                                        my: 1,
+                                        '& .MuiOutlinedInput-root': {
+                                            '& fieldset': { border: 'none' },
+                                            '&:hover fieldset': { border: 'none' },
+                                            '&.Mui-focused fieldset': { border: 'none' },
+                                        },
+                                        '& .MuiInputBase-input': {
+                                            backgroundColor: error && guesses[index] === '' ? '#ffcccb' : '#f0f0f0',
+                                            borderRadius: 5,
+                                            transition: 'background-color 0.3s',
+                                        },
+                                    }}
+                                />
+                            );
+                        })}
+                    </Box>
+                ))}
+            </Box>
+        );
     };
 
     return (
@@ -233,6 +244,10 @@ const Game = ({ showGame, setShowGame, words }) => {
             <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', mb: '30px' }}>
                 {displayPuzzle()}
             </Box>
+            <Typography variant="h5" gutterBottom sx={{ color: '#0F2BFF' }}>
+                {category.toUpperCase()}
+            </Typography>
+
             {!solved && (
                 <>
 
