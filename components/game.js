@@ -162,6 +162,37 @@ const Game = ({ showGame, setShowGame, words }) => {
         setWholePhraseGuess('');
     };
 
+    const handleLetterGuess = (guess) => {
+        guess = guess.toUpperCase();
+        console.log("Handling letter guess:", guess);
+
+        if (guess.length === 1 && /[A-Z]/.test(guess)) {
+            let found = false;
+            const newGuesses = [...guesses];
+
+            for (let i = 0; i < puzzle.length; i++) {
+                if (puzzle[i] === guess && newGuesses[i] === '') {
+                    newGuesses[i] = guess;
+                    found = true;
+                }
+            }
+
+            if (!found) {
+                setError(true);
+                setTimeout(() => {
+                    setError(false);
+                }, 500);
+            }
+
+            setGuesses(newGuesses);
+
+            if (newGuesses.join('') === puzzle.replace(' ', '')) {
+                setSolved(true);
+            }
+        }
+
+    };
+
     const displayPuzzle = () => {
         return puzzle.split('').map((char, index) => (
             <TextField
@@ -195,44 +226,16 @@ const Game = ({ showGame, setShowGame, words }) => {
     };
 
     return (
-        <Container sx={{ textAlign: 'center', mt: 4 }}>
+        <Box sx={{ textAlign: 'center', mt: 4, width: '100vw' }}>
             <Typography variant="h3" gutterBottom>
                 Wheel of Fortune
             </Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', mb: '30px' }}>
                 {displayPuzzle()}
             </Box>
             {!solved && (
                 <>
-                    <Stack flexDirection='column' justifyContent={'center'} alignItems={'center'} display={'flex'} component="form" onSubmit={(e) => { e.preventDefault(); handleGuess(currentGuess); }} sx={{ mt: 4 }}>
-                        {/* <TextField
-                            inputRef={inputRef}
-                            value={currentGuess}
-                            onChange={(e) => setCurrentGuess(e.target.value)}
-                            inputProps={{
-                                style: { textAlign: 'center' },
-                            }}
 
-                            sx={{
-                                width: 60,
-                                mx: 0.5,
-                                my: 1,
-                                '& .MuiOutlinedInput-root': {
-                                    '& fieldset': { border: 'none' },
-                                    '&:hover fieldset': { border: 'none' },
-                                    '&.Mui-focused fieldset': { border: 'none' },
-                                },
-                                '& .MuiInputBase-input': {
-                                    backgroundColor: '#f0f0f0',
-                                    borderRadius: 5,
-                                    transition: 'background-color 0.3s',
-                                },
-                            }}
-                        />
-                        <Button type="submit" variant="contained" sx={{ ml: 2, width: 300, m: 4 }}>
-                            Guess Letter or Word
-                        </Button> */}
-                    </Stack>
                     <Stack
                         flexDirection='column'
                         justifyContent='center'
@@ -297,9 +300,9 @@ const Game = ({ showGame, setShowGame, words }) => {
                         Congratulations! You solved the puzzle!
                     </Typography>
                     <Button onClick={() => { setMoreConfetti(!moreConfetti) }} variant="contained" sx={{ ml: 2, width: 300, m: 4 }}>
-                        More confetti!
+                        More confetti Bitch!
                     </Button>
-                    <SafetyDividerRounded />
+
                     <Button onClick={() => {
                         setShowGame(false)
                     }}>
@@ -307,7 +310,7 @@ const Game = ({ showGame, setShowGame, words }) => {
                     </Button>
                 </>
             )}
-        </Container>
+        </Box>
     );
 };
 
