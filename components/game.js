@@ -233,17 +233,30 @@ const Game = ({ showGame, setShowGame, words }) => {
                             Guess Letter or Word
                         </Button> */}
                     </Stack>
-                    <Stack flexDirection='column' justifyContent={'center'} alignItems={'center'} display={'flex'} component="form" onSubmit={(e) => { e.preventDefault(); handleWholePhraseGuess(wholePhraseGuess); }} sx={{ mt: 4 }}>
+                    <Stack
+                        flexDirection='column'
+                        justifyContent='center'
+                        alignItems='center'
+                        display='flex'
+                        component="form"
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            if (wholePhraseGuess.length > 1) {
+                                handleWholePhraseGuess(wholePhraseGuess);
+                            } else {
+                                handleLetterGuess(wholePhraseGuess);
+                            }
+                        }}
+                        sx={{ mt: 4 }}
+                    >
                         <TextField
                             value={wholePhraseGuess}
                             onChange={(e) => {
-                                //if the length is grater than 1, then it is a word
+                                setWholePhraseGuess(e.target.value);
                                 if (e.target.value.length > 1) {
-                                    console.log("Word guess:", e.target.value.length)
-                                    setWholePhraseGuess(e.target.value)
+                                    console.log("Word/Phrase guess:", e.target.value);
                                 } else {
-                                    console.log("Letter guess:", e.target.value)
-                                    setWholePhraseGuess(e.target.value)
+                                    console.log("Letter guess:", e.target.value);
                                 }
                             }}
                             placeholder="Guess letter or the whole phrase"
@@ -263,7 +276,11 @@ const Game = ({ showGame, setShowGame, words }) => {
                                 },
                             }}
                         />
-                        <Button type="submit" variant="contained" sx={{ ml: 2, width: 300, m: 4 }}>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            sx={{ ml: 2, width: 300, m: 4 }}
+                        >
                             Guess The Letter Or The Whole Phrase
                         </Button>
                     </Stack>
