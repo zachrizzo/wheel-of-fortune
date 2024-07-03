@@ -1,19 +1,21 @@
-// components/Game.js
-
 import React, { useState, useRef, useEffect } from 'react';
-import { Container, Typography, TextField, Box, Button, Stack } from '@mui/material';
+import { Container, Typography, TextField, Box, Button, Stack, IconButton } from '@mui/material';
+import MicIcon from '@mui/icons-material/Mic';
 import confetti from 'canvas-confetti';
+import { SafetyDividerRounded } from '@mui/icons-material';
 
 const puzzle = "HELLO WORLD";
 
-const Game = () => {
+const Game = ({ showGame, setShowGame }) => {
     const [guesses, setGuesses] = useState(new Array(puzzle.length).fill(''));
+    const [solved, setSolved] = useState(false);
     const [currentGuess, setCurrentGuess] = useState('');
     const [wholePhraseGuess, setWholePhraseGuess] = useState('');
     const [error, setError] = useState(false);
-    const [solved, setSolved] = useState(false);
+    const [isListening, setIsListening] = useState(false);
     const inputRef = useRef(null);
     const [moreConfetti, setMoreConfetti] = useState(false);
+    const recognition = useRef(null);
 
     useEffect(() => {
         if (solved) {
@@ -25,9 +27,72 @@ const Game = () => {
         }
     }, [solved, moreConfetti]);
 
-    const handleGuess = (e) => {
-        e.preventDefault();
-        const guess = currentGuess.toUpperCase();
+    useEffect(() => {
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition.current = new SpeechRecognition();
+            recognition.current.continuous = false;
+            recognition.current.lang = 'en-US';
+            recognition.current.interimResults = false;
+            recognition.current.maxAlternatives = 1;
+
+            recognition.current.onresult = (event) => {
+                const speechResult = event.results[0][0].transcript.toUpperCase().trim();
+                console.log("Speech result:", speechResult);
+
+                if (speechResult.length === 1 && /[A-Z]/.test(speechResult)) {
+                    console.log("Single letter guess:", speechResult);
+                    setCurrentGuess(speechResult);
+                    handleGuess(speechResult);
+                } else {
+                    console.log("Whole phrase guess:", speechResult);
+                    setWholePhraseGuess(speechResult);
+                    handleWholePhraseGuess(speechResult);
+                }
+                setIsListening(false);
+            };
+
+            recognition.current.onerror = (event) => {
+                console.error('Speech recognition error', event.error);
+                setIsListening(false);
+            };
+
+            return () => {
+                if (recognition.current) {
+                    recognition.current.stop();
+                    recognition.current.onresult = null;
+                    recognition.current.onerror = null;
+                }
+            };
+        }
+    }, []);
+
+    const toggleListening = () => {
+        if (isListening) {
+            recognition.current.stop();
+            setIsListening(false);
+        } else {
+            try {
+                recognition.current.start();
+                setIsListening(true);
+            } catch (error) {
+                if (error.name === 'InvalidStateError') {
+                    console.log('Recognition is already running. Stopping and restarting.');
+                    recognition.current.stop();
+                    setTimeout(() => {
+                        recognition.current.start();
+                        setIsListening(true);
+                    }, 10);
+                } else {
+                    console.error('Error starting speech recognition:', error);
+                }
+            }
+        }
+    };
+
+    const handleGuess = (guess) => {
+        guess = guess.toUpperCase();
+        console.log("Handling guess:", guess);
 
         if (guess.length === 1 && /[A-Z]/.test(guess)) {
             // Single letter guess
@@ -49,20 +114,41 @@ const Game = () => {
             }
 
             setGuesses(newGuesses);
-            setCurrentGuess('');
 
             if (newGuesses.join('') === puzzle.replace(' ', '')) {
                 setSolved(true);
             }
         } else {
-            // Invalid input for single letter guess, clear and return
-            setCurrentGuess('');
+            // Word guess
+            const puzzleWords = puzzle.split(' ');
+            if (puzzleWords.includes(guess)) {
+                const newGuesses = [...guesses];
+                let startIndex = 0;
+                for (const word of puzzleWords) {
+                    if (word === guess) {
+                        for (let i = 0; i < word.length; i++) {
+                            newGuesses[startIndex + i] = word[i];
+                        }
+                    }
+                    startIndex += word.length + 1; // +1 for space
+                }
+                setGuesses(newGuesses);
+                if (newGuesses.join('') === puzzle.replace(' ', '')) {
+                    setSolved(true);
+                }
+            } else {
+                setError(true);
+                setTimeout(() => {
+                    setError(false);
+                }, 500);
+            }
         }
+        setCurrentGuess('');
     };
 
-    const handleWholePhraseGuess = (e) => {
-        e.preventDefault();
-        const guess = wholePhraseGuess.toUpperCase();
+    const handleWholePhraseGuess = (guess) => {
+        guess = guess.toUpperCase();
+        console.log("Handling whole phrase guess:", guess);
 
         if (guess === puzzle) {
             setGuesses(puzzle.split(''));
@@ -98,7 +184,7 @@ const Game = () => {
                     '& .MuiInputBase-input': {
                         backgroundColor: char === ' '
                             ? 'transparent'
-                            : (error && guesses[index] === '' ? 'red' : '#fff'),
+                            : (error && guesses[index] === '' ? '#ffcccb' : '#f0f0f0'),
                         borderRadius: 5,
                         border: char === ' ' ? 'none' : '2px solid #000',
                         transition: 'background-color 0.3s',
@@ -119,17 +205,16 @@ const Game = () => {
             </Box>
             {!solved && (
                 <>
-                    <Stack flexDirection='column' justifyContent={'center'} alignItems={'center'} display={'flex'} component="form" onSubmit={handleGuess} sx={{ mt: 4 }}>
+                    <Stack flexDirection='column' justifyContent={'center'} alignItems={'center'} display={'flex'} component="form" onSubmit={(e) => { e.preventDefault(); handleGuess(currentGuess); }} sx={{ mt: 4 }}>
                         <TextField
                             inputRef={inputRef}
                             value={currentGuess}
                             onChange={(e) => setCurrentGuess(e.target.value)}
                             inputProps={{
-                                maxLength: 1,
                                 style: { textAlign: 'center' },
                             }}
                             sx={{
-                                width: 60,
+                                width: 200,
                                 mx: 0.5,
                                 my: 1,
                                 '& .MuiOutlinedInput-root': {
@@ -138,7 +223,7 @@ const Game = () => {
                                     '&.Mui-focused fieldset': { border: 'none' },
                                 },
                                 '& .MuiInputBase-input': {
-                                    backgroundColor: '#fff',
+                                    backgroundColor: '#f0f0f0',
                                     borderRadius: 5,
                                     border: '2px solid #000',
                                     transition: 'background-color 0.3s',
@@ -146,10 +231,10 @@ const Game = () => {
                             }}
                         />
                         <Button type="submit" variant="contained" sx={{ ml: 2, width: 200, m: 4 }}>
-                            Guess Letter
+                            Guess Letter or Word
                         </Button>
                     </Stack>
-                    <Stack flexDirection='column' justifyContent={'center'} alignItems={'center'} display={'flex'} component="form" onSubmit={handleWholePhraseGuess} sx={{ mt: 4 }}>
+                    <Stack flexDirection='column' justifyContent={'center'} alignItems={'center'} display={'flex'} component="form" onSubmit={(e) => { e.preventDefault(); handleWholePhraseGuess(wholePhraseGuess); }} sx={{ mt: 4 }}>
                         <TextField
                             value={wholePhraseGuess}
                             onChange={(e) => setWholePhraseGuess(e.target.value)}
@@ -164,7 +249,7 @@ const Game = () => {
                                     '&.Mui-focused fieldset': { border: 'none' },
                                 },
                                 '& .MuiInputBase-input': {
-                                    backgroundColor: '#fff',
+                                    backgroundColor: '#f0f0f0',
                                     borderRadius: 5,
                                     border: '2px solid #000',
                                     transition: 'background-color 0.3s',
@@ -175,6 +260,11 @@ const Game = () => {
                             Guess Whole Phrase
                         </Button>
                     </Stack>
+                    <IconButton
+                        onClick={toggleListening}
+                        sx={{ width: 60, height: 60, color: 'white', mt: 4, backgroundColor: isListening ? "#ff6b6b" : "#4caf50", ":hover": { backgroundColor: isListening ? "#ff6b6b" : "#4caf50" } }}>
+                        <MicIcon />
+                    </IconButton>
                 </>
             )}
             {solved && (
@@ -183,7 +273,13 @@ const Game = () => {
                         Congratulations! You solved the puzzle!
                     </Typography>
                     <Button onClick={() => { setMoreConfetti(!moreConfetti) }} variant="contained" sx={{ ml: 2, width: 300, m: 4 }}>
-                        More confetti Bitch!
+                        More confetti!
+                    </Button>
+                    <SafetyDividerRounded />
+                    <Button onClick={() => {
+                        setShowGame(false)
+                    }}>
+                        New Game
                     </Button>
                 </>
             )}
