@@ -4,9 +4,9 @@ import MicIcon from '@mui/icons-material/Mic';
 import confetti from 'canvas-confetti';
 import { SafetyDividerRounded } from '@mui/icons-material';
 
-const puzzle = "HELLO WORLD";
-
-const Game = ({ showGame, setShowGame }) => {
+const Game = ({ showGame, setShowGame, words }) => {
+    const category = words[1];
+    const puzzle = words[0].toUpperCase();
     const [guesses, setGuesses] = useState(new Array(puzzle.length).fill(''));
     const [solved, setSolved] = useState(false);
     const [currentGuess, setCurrentGuess] = useState('');
@@ -186,7 +186,6 @@ const Game = ({ showGame, setShowGame }) => {
                             ? 'transparent'
                             : (error && guesses[index] === '' ? '#ffcccb' : '#f0f0f0'),
                         borderRadius: 5,
-                        border: char === ' ' ? 'none' : '2px solid #000',
                         transition: 'background-color 0.3s',
                     },
                 }}
@@ -206,15 +205,16 @@ const Game = ({ showGame, setShowGame }) => {
             {!solved && (
                 <>
                     <Stack flexDirection='column' justifyContent={'center'} alignItems={'center'} display={'flex'} component="form" onSubmit={(e) => { e.preventDefault(); handleGuess(currentGuess); }} sx={{ mt: 4 }}>
-                        <TextField
+                        {/* <TextField
                             inputRef={inputRef}
                             value={currentGuess}
                             onChange={(e) => setCurrentGuess(e.target.value)}
                             inputProps={{
                                 style: { textAlign: 'center' },
                             }}
+
                             sx={{
-                                width: 200,
+                                width: 60,
                                 mx: 0.5,
                                 my: 1,
                                 '& .MuiOutlinedInput-root': {
@@ -225,20 +225,28 @@ const Game = ({ showGame, setShowGame }) => {
                                 '& .MuiInputBase-input': {
                                     backgroundColor: '#f0f0f0',
                                     borderRadius: 5,
-                                    border: '2px solid #000',
                                     transition: 'background-color 0.3s',
                                 },
                             }}
                         />
-                        <Button type="submit" variant="contained" sx={{ ml: 2, width: 200, m: 4 }}>
+                        <Button type="submit" variant="contained" sx={{ ml: 2, width: 300, m: 4 }}>
                             Guess Letter or Word
-                        </Button>
+                        </Button> */}
                     </Stack>
                     <Stack flexDirection='column' justifyContent={'center'} alignItems={'center'} display={'flex'} component="form" onSubmit={(e) => { e.preventDefault(); handleWholePhraseGuess(wholePhraseGuess); }} sx={{ mt: 4 }}>
                         <TextField
                             value={wholePhraseGuess}
-                            onChange={(e) => setWholePhraseGuess(e.target.value)}
-                            placeholder="Guess the whole phrase"
+                            onChange={(e) => {
+                                //if the length is grater than 1, then it is a word
+                                if (e.target.value.length > 1) {
+                                    console.log("Word guess:", e.target.value.length)
+                                    setWholePhraseGuess(e.target.value)
+                                } else {
+                                    console.log("Letter guess:", e.target.value)
+                                    setWholePhraseGuess(e.target.value)
+                                }
+                            }}
+                            placeholder="Guess letter or the whole phrase"
                             sx={{
                                 width: 300,
                                 mx: 0.5,
@@ -251,13 +259,12 @@ const Game = ({ showGame, setShowGame }) => {
                                 '& .MuiInputBase-input': {
                                     backgroundColor: '#f0f0f0',
                                     borderRadius: 5,
-                                    border: '2px solid #000',
                                     transition: 'background-color 0.3s',
                                 },
                             }}
                         />
-                        <Button type="submit" variant="contained" sx={{ ml: 2, width: 200, m: 4 }}>
-                            Guess Whole Phrase
+                        <Button type="submit" variant="contained" sx={{ ml: 2, width: 300, m: 4 }}>
+                            Guess The Letter Or The Whole Phrase
                         </Button>
                     </Stack>
                     <IconButton

@@ -9,11 +9,11 @@ const Home = () => {
 
   const fetchWords = async () => {
     try {
-      // const response = await axios.get('http://192.168.1.107:8000/getWords', {
-      //   timeout: 5000, // Adding a timeout of 5 seconds
-      // });
-      // console.log('Words:', response.data);
-      // setWords(response.data);
+      const response = await axios.get('http://127.0.0.1:8000/getWords', {
+        timeout: 5000, // Adding a timeout of 5 seconds
+      });
+      console.log('Words:', response.data);
+      setWords(response.data);
       setShowGame(true);
     } catch (error) {
       console.error('Error fetching words:', error);
