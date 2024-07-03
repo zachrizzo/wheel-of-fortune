@@ -30,7 +30,7 @@ async def select_and_remove_words():
     """
     if len(list1) != len(list2):
         raise ValueError("Both lists must have the same length.")
-    if len(list1 == 0):
+    if not list1:
         selected_word1 = "We ran out of words"
         selected_word2 = "Why we need to stop playing"
         return selected_word1, selected_word2
