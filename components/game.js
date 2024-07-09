@@ -17,8 +17,6 @@ const Game = ({ showGame, setShowGame, words }) => {
     const [moreConfetti, setMoreConfetti] = useState(false);
     const recognition = useRef(null);
 
-
-
     useEffect(() => {
         if (solved) {
             confetti({
@@ -97,7 +95,6 @@ const Game = ({ showGame, setShowGame, words }) => {
         console.log("Handling guess:", guess);
 
         if (guess.length === 1 && /[A-Z]/.test(guess)) {
-            // Single letter guess
             let found = false;
             const newGuesses = [...guesses];
 
@@ -121,7 +118,6 @@ const Game = ({ showGame, setShowGame, words }) => {
                 setSolved(true);
             }
         } else {
-            // Word guess
             const puzzleWords = puzzle.split(' ');
             if (puzzleWords.includes(guess)) {
                 const newGuesses = [...guesses];
@@ -132,7 +128,7 @@ const Game = ({ showGame, setShowGame, words }) => {
                             newGuesses[startIndex + i] = word[i];
                         }
                     }
-                    startIndex += word.length + 1; // +1 for space
+                    startIndex += word.length + 1;
                 }
                 setGuesses(newGuesses);
                 if (newGuesses.join('') === puzzle.replace(' ', '')) {
@@ -146,6 +142,7 @@ const Game = ({ showGame, setShowGame, words }) => {
             }
         }
         setCurrentGuess('');
+        setWholePhraseGuess(''); // Clear the input box
     };
 
     const handleWholePhraseGuess = (guess) => {
@@ -161,7 +158,7 @@ const Game = ({ showGame, setShowGame, words }) => {
                 setError(false);
             }, 500);
         }
-        setWholePhraseGuess('');
+        setWholePhraseGuess(''); // Clear the input box
     };
 
     const handleLetterGuess = (guess) => {
@@ -192,7 +189,7 @@ const Game = ({ showGame, setShowGame, words }) => {
                 setSolved(true);
             }
         }
-
+        setWholePhraseGuess(''); // Clear the input box
     };
 
     const displayPuzzle = () => {
@@ -250,7 +247,6 @@ const Game = ({ showGame, setShowGame, words }) => {
 
             {!solved && (
                 <>
-
                     <Stack
                         flexDirection='column'
                         justifyContent='center'
